@@ -1,14 +1,6 @@
 {
   "subjects": [
     {
-      "id": "dotnet",
-      "label": ".NET",
-      "description": "ASP.NET Core, APIs, architecture and cloud.",
-      "csvFile": "dotnet.csv",
-      "topicsPage": "dotnet.html",
-      "interviewPage": "dotnet_interview.html"
-    },
-    {
       "id": "dotnet-core",
       "label": ".NET Core",
       "description": "Cross-platform .NET applications, dependency injection, and hosting.",

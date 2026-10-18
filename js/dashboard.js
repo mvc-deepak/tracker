@@ -105,21 +105,29 @@ async function loadAll() {
   const notStarted = all.filter(item => item.status === 'Not Started').length;
   const importance = all.reduce((sum, item) => sum + item.importance, 0);
   const weighted = importance ? 100 * all.filter(item => item.status === 'Revised').reduce((sum, item) => sum + item.importance, 0) / importance : 0;
-  const metrics = [['Question bank', total, 'Questions across available subjects'], ['Revised', revised, 'Marked as revised'], ['Learning', learning, 'Currently being studied'], ['Progress', Math.round(weighted) + '%', 'Importance-weighted revised share']];
-  $('metrics').innerHTML = metrics.map(([label, value, detail]) => '<article class="metric"><span class="metric-label">' + escapeHTML(label) + '</span><strong class="metric-value">' + escapeHTML(value) + '</strong><span class="metric-sub">' + escapeHTML(detail) + '</span></article>').join('');
+  const metrics = [['📚', 'Question bank', total, 'Across all subjects'], ['✅', 'Revised', revised, 'Ready to revisit'], ['🧠', 'Learning', learning, 'In progress'], ['🎯', 'Weighted progress', Math.round(weighted) + '%', 'By question importance']];
+  $('metrics').innerHTML = metrics.map(([icon, label, value, detail]) => '<article class="metric"><span class="metric-icon" aria-hidden="true">' + icon + '</span><span class="metric-label">' + escapeHTML(label) + '</span><strong class="metric-value">' + escapeHTML(value) + '</strong><span class="metric-sub">' + escapeHTML(detail) + '</span></article>').join('');
   $('subjectChart').innerHTML = groups.map(group => {
     const subjectItems = all.filter(item => item.subject === group.subject.id);
     const count = subjectItems.length;
     const done = subjectItems.filter(item => item.status === 'Revised').length;
     const percent = count ? Math.round(100 * done / count) : 0;
-    return '<div class="bar-row"><span class="bar-label">' + escapeHTML(group.subject.label) + '</span><div class="bar-track"><div class="bar-fill" style="width:' + percent + '%"></div></div><span class="bar-value">' + percent + '%</span></div>';
+    return '<div class="bar-row"><span class="bar-label">' + escapeHTML(group.subject.label) + '</span><div class="bar-track" role="img" aria-label="' + percent + '% revised"><div class="bar-fill" style="width:' + percent + '%"></div></div><span class="bar-value">' + percent + '%</span></div>';
   }).join('') || '<p class="muted">Add questions to your CSV files to see progress.</p>';
-  const counts = [['Not Started', notStarted], ['Learning', learning], ['Revised', revised]];
-  $('statusChart').innerHTML = counts.map(([status, count]) => '<div class="status-row" data-status="' + status + '"><span>' + status + '</span><div class="status-track"><div class="status-fill" style="width:' + (total ? 100 * count / total : 0) + '%"></div></div><strong>' + count + '</strong></div>').join('');
+  const revisedPercent = total ? 100 * revised / total : 0;
+  const learningPercent = total ? 100 * learning / total : 0;
+  const statusLabel = revised + ' revised, ' + learning + ' learning, ' + notStarted + ' not started';
+  const counts = [['✅', 'Revised', revised], ['🧠', 'Learning', learning], ['⏳', 'Not started', notStarted]];
+  $('statusChart').innerHTML = '<div class="status-donut" role="img" aria-label="' + statusLabel + '" style="--revised:' + revisedPercent + '%;--learning:' + learningPercent + '%"><div><strong>' + total + '</strong><span>questions</span></div></div><div class="status-legend">' + counts.map(([icon, status, count]) => '<div class="status-legend-row"><span class="status-legend-label"><span aria-hidden="true">' + icon + '</span>' + status + '</span><strong>' + count + '</strong><span class="status-legend-percent">' + (total ? Math.round(100 * count / total) : 0) + '%</span></div>').join('') + '</div>';
+  $('subjectCount').textContent = SUBJECTS.length + (SUBJECTS.length === 1 ? ' subject' : ' subjects');
+  const subjectIcons = {'azure':'☁️','csharp':'💻','claude':'🤖','design-patterns':'🧩','dotnet-core':'🟣','github':'🐙','kubernetes':'⚙️','microservices':'🔗','react':'⚛️','sql':'🗃️','system-design':'🏗️','terraform':'🌍'};
   $('subjectCards').innerHTML = SUBJECTS.map(subject => {
-    const count = all.filter(item => item.subject === subject.id).length;
+    const subjectItems = all.filter(item => item.subject === subject.id);
+    const count = subjectItems.length;
+    const done = subjectItems.filter(item => item.status === 'Revised').length;
+    const percent = count ? Math.round(100 * done / count) : 0;
     const destination = subject.interviewPage ? 'subjects/' + subject.id + '/' + subject.interviewPage : subject.href;
-    return '<a class="subject-card" href="' + escapeHTML(destination) + '"><h3>' + escapeHTML(subject.label) + '</h3><p>' + escapeHTML(subject.description) + '<br>' + count + ' questions in bank</p></a>';
+    return '<a class="subject-card" href="' + escapeHTML(destination) + '"><span class="subject-card-icon" aria-hidden="true">' + (subjectIcons[subject.id] || '📘') + '</span><span class="subject-card-content"><strong>' + escapeHTML(subject.label) + '</strong><span>' + count + ' questions · ' + percent + '% revised</span><span class="subject-card-track"><i style="width:' + percent + '%"></i></span></span><span class="subject-card-arrow" aria-hidden="true">↗</span></a>';
   }).join('');
 }
 loadAll().catch(error => { $('loadNotice').hidden = false; $('loadNotice').className = 'notice error'; $('loadNotice').textContent = error.message; });

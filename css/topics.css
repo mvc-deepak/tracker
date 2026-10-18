@@ -3,7 +3,7 @@
 @media(max-width:480px){.topic-card{padding:14px}.topic-toolbar-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.topic-toolbar-actions .button{justify-content:center;text-align:center}.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gallery-grid .gallery-tile img{height:120px}.image-viewer{padding:58px 10px 14px}.image-viewer-actions{flex-wrap:wrap}}
 .gallery-grid[hidden]{display:none}
 
-.topic-page-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}.topic-page-actions .button{white-space:nowrap}@media(max-width:650px){.topic-page-actions{justify-content:flex-start;width:100%}}
+.topic-page-actions{display:flex;align-items:center;justify-content:flex-end;align-self:flex-start;flex:0 0 auto;margin-left:auto;flex-wrap:wrap;gap:8px}.topic-page-actions .button{white-space:nowrap}
 
 .topic-management{padding:0;overflow:hidden}.topic-management-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;cursor:pointer;list-style:none}.topic-management-summary::-webkit-details-marker{display:none}.topic-management-summary::after{content:"＋";color:var(--muted);font-size:18px}.topic-management[open]>.topic-management-summary::after{content:"−"}.topic-management-summary strong{font-size:14px}.topic-management-summary span{margin-left:auto;color:var(--muted);font-size:12px}.topic-management-content{padding:0 18px 16px;border-top:1px solid var(--border)}
 @media(max-width:760px){.topic-management{display:none}}

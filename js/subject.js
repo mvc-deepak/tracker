@@ -188,7 +188,7 @@ function shareActionsHTML(item, index) {
   const title = escapeHTML(item.question);
   const key = escapeHTML(item.key);
   const id = `share-menu-${index}`;
-  return `<div class="question-sharebar"><div class="question-share-actions"><button type="button" class="button copy-question-button" data-copy-question="${key}">▢ Copy question</button><button type="button" class="button share-options-button" aria-expanded="false" aria-controls="${id}" data-share-toggle="${id}">♧ Share options</button><div class="share-menu" id="${id}" hidden role="group" aria-label="Share ${title}"><button type="button" class="share-menu-item" data-share-facebook="${key}">Share on Facebook</button><button type="button" class="share-menu-item" data-copy-link="${key}">Copy question link</button><button type="button" class="share-menu-item" data-copy-text="${key}">Copy question and answer</button></div></div></div>`;
+  return `<div class="question-share-actions"><button type="button" class="icon-action copy-question-button" data-copy-question="${key}" aria-label="Copy question" title="Copy question">📋</button><button type="button" class="icon-action share-options-button" aria-label="Share question" title="Share question" aria-expanded="false" aria-controls="${id}" data-share-toggle="${id}">🔗</button><div class="share-menu" id="${id}" hidden role="group" aria-label="Share ${title}"><button type="button" class="share-menu-item" data-share-facebook="${key}">Share on Facebook</button><button type="button" class="share-menu-item" data-copy-link="${key}">Copy question link</button><button type="button" class="share-menu-item" data-copy-text="${key}">Copy question and answer</button></div></div>`;
 }
 
 function makeEditor() {
@@ -293,20 +293,19 @@ function openEditor(item = null) {
 function installManagementControls() {
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = siteRoot + 'css/question-admin.css?v=question-admin-6';
+  stylesheet.href = siteRoot + 'css/question-admin.css?v=question-action-row-3';
   document.head.append(stylesheet);
   const toolbar = document.querySelector('.subject-toolbar');
   const actions = document.createElement('div');
   actions.className = 'bank-actions';
   actions.innerHTML = '<button type="button" id="saveQuestionCsv" class="button primary" disabled>Save CSV</button><button type="button" id="addQuestion" class="button" disabled>＋ Add question</button>';
   actions.classList.add('subject-heading-actions');
-  const backToTopics = $('backToTopics');
+  $('backToTopics')?.remove();
   const csvState = document.createElement('span');
   csvState.id = 'questionCsvState';
   csvState.className = 'question-csv-state';
   csvState.setAttribute('role', 'status');
   document.querySelector('.local-checkout-control')?.append(csvState);
-  actions.prepend(backToTopics);
   const summaryRow = document.createElement('div');
   summaryRow.className = 'interview-summary-row';
   const subjectStats = $('subjectStats');
@@ -332,7 +331,6 @@ subjectReady.then(() => {
   document.title = 'Interview Prep · ' + subject.label + ' Interview Questions';
   $('subjectTitle').textContent = subject.label + ' Interview Questions';
   $('subjectDescription').textContent = subject.description;
-  $('backToTopics').href = siteRoot + 'subjects/' + subject.id + '/' + subject.topicsPage;
   installManagementControls();
   (async () => {
     try {
@@ -360,8 +358,8 @@ subjectReady.then(() => {
         $('questionList').innerHTML = sharedBanner + filtered.map(item => {
           const questionNumber = items.indexOf(item) + 1;
           const sharedAnswer = answerHTML(item.answer);
-          const shareBar = shareActionsHTML(item, questionNumber - 1);
-          return `<details class="question" id="question-${escapeHTML(shareIdFor(item))}"${requestedQuestionId ? ' open' : ''}><summary><span class="question-number">QUESTION ${questionNumber}</span><span class="question-title">${escapeHTML(item.question)}</span><span class="question-meta"><span class="chip">${escapeHTML(item.concept)}</span><span class="chip">${escapeHTML(item.language)}</span><span class="chip">Importance ${item.importance}/5</span><span class="chip status-${escapeHTML(item.status)}">${escapeHTML(item.status)}</span></span></summary><div class="answer">${sharedAnswer}${shareBar}<div class="question-controls"><label>Study status <select data-status-key="${escapeHTML(item.key)}" aria-label="Study status for ${escapeHTML(item.question)}" ${checkoutHandle ? '' : 'disabled'}>${STATUSES.map(value => `<option${item.status === value ? ' selected' : ''}>${value}</option>`).join('')}</select></label><div class="question-actions"><button type="button" class="button" data-edit="${escapeHTML(item.key)}" ${checkoutHandle ? '' : 'disabled'}>Edit</button><button type="button" class="button danger-button" data-delete="${escapeHTML(item.key)}" ${checkoutHandle ? '' : 'disabled'}>Delete</button></div></div></div></details>`;
+          const shareActions = shareActionsHTML(item, questionNumber - 1);
+          return `<details class="question" id="question-${escapeHTML(shareIdFor(item))}"${requestedQuestionId ? ' open' : ''}><summary><span class="question-number">${questionNumber}.</span><span class="question-title">${escapeHTML(item.question)}</span><span class="question-meta"><span class="chip">${escapeHTML(item.concept)}</span><span class="chip">${escapeHTML(item.language)}</span><span class="chip">Importance ${item.importance}/5</span><span class="chip status-${escapeHTML(item.status)}">${escapeHTML(item.status)}</span></span></summary><div class="answer">${sharedAnswer}<div class="question-controls"><label class="question-status-control">Study status <select data-status-key="${escapeHTML(item.key)}" aria-label="Study status for ${escapeHTML(item.question)}" ${checkoutHandle ? '' : 'disabled'}>${STATUSES.map(value => `<option${item.status === value ? ' selected' : ''}>${value}</option>`).join('')}</select></label><div class="question-actions">${shareActions}<button type="button" class="icon-action" data-edit="${escapeHTML(item.key)}" aria-label="Edit question" title="Edit question" ${checkoutHandle ? '' : 'disabled'}>✏️</button><button type="button" class="icon-action danger-icon-action" data-delete="${escapeHTML(item.key)}" aria-label="Delete question" title="Delete question" ${checkoutHandle ? '' : 'disabled'}>🗑️</button></div></div></div></details>`;
         }).join('');
         if (requestedQuestionId) document.title = 'Shared question · ' + filtered[0].question + ' | ' + subject.label;
       };
