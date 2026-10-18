@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+  <title id="title">Value types and reference types</title>
+  <desc id="desc">A value variable contains its data; a reference variable points to an object.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1f4ff"/>
+      <stop offset="1" stop-color="#effaf7"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="560" rx="32" fill="url(#bg)"/>
+  <text x="56" y="78" fill="#3269d5" font-family="Segoe UI, sans-serif" font-size="20" font-weight="700" letter-spacing="3">C# STUDY CARD</text>
+  <text x="56" y="136" fill="#202b3c" font-family="Segoe UI, sans-serif" font-size="40" font-weight="750">Value or reference?</text>
+  <rect x="56" y="178" width="408" height="276" rx="22" fill="#fff" stroke="#bfd2f4" stroke-width="2"/>
+  <rect x="496" y="178" width="408" height="276" rx="22" fill="#fff" stroke="#b6e7d5" stroke-width="2"/>
+  <text x="88" y="226" fill="#3269d5" font-family="Segoe UI, sans-serif" font-size="24" font-weight="700">VALUE TYPE</text>
+  <text x="88" y="263" fill="#526174" font-family="Segoe UI, sans-serif" font-size="18">Variable contains the value</text>
+  <rect x="98" y="302" width="268" height="92" rx="16" fill="#eaf0ff"/>
+  <text x="232" y="339" text-anchor="middle" fill="#254f9e" font-family="Segoe UI, sans-serif" font-size="17">int score</text>
+  <text x="232" y="373" text-anchor="middle" fill="#202b3c" font-family="Segoe UI, sans-serif" font-size="25" font-weight="700">42</text>
+  <text x="528" y="226" fill="#16856b" font-family="Segoe UI, sans-serif" font-size="24" font-weight="700">REFERENCE TYPE</text>
+  <text x="528" y="263" fill="#526174" font-family="Segoe UI, sans-serif" font-size="18">Variable refers to an object</text>
+  <rect x="528" y="314" width="138" height="72" rx="15" fill="#eaf0ff"/>
+  <text x="597" y="357" text-anchor="middle" fill="#254f9e" font-family="Segoe UI, sans-serif" font-size="17">Customer</text>
+  <path d="M676 350h69" stroke="#16856b" stroke-width="5" stroke-linecap="round"/>
+  <path d="m735 339 13 11-13 11" fill="none" stroke="#16856b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="760" y="314" width="110" height="72" rx="15" fill="#eafaf5" stroke="#b6e7d5"/>
+  <text x="815" y="344" text-anchor="middle" fill="#16856b" font-family="Segoe UI, sans-serif" font-size="15" font-weight="650">OBJECT</text>
+  <text x="815" y="367" text-anchor="middle" fill="#526174" font-family="Segoe UI, sans-serif" font-size="14">on heap</text>
+  <text x="56" y="504" fill="#526174" font-family="Segoe UI, sans-serif" font-size="18">Assignment and mutation behavior depend on the type and its members.</text>
+</svg>

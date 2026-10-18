@@ -12,6 +12,10 @@
       ],
       "images": [
         {
+          "file": "cards/middleware-pipeline.svg",
+          "alt": "ASP.NET Core middleware request and response pipeline"
+        },
+        {
           "file": "images/concept.svg",
           "alt": "Incoming request, middleware pipeline, and endpoint response"
         }

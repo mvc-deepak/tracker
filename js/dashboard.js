@@ -9,7 +9,9 @@ async function loadRevisionImages() {
       if (!response.ok) return [];
       const manifest = await response.json();
       if (!Array.isArray(manifest.topics)) return [];
-      return manifest.topics.flatMap(topic => (Array.isArray(topic.images) ? topic.images : []).map(image => ({
+      return manifest.topics.flatMap(topic => (Array.isArray(topic.images) ? topic.images : [])
+        .filter(image => ['cards', 'images'].includes(String(image.file).split('/')[0].toLocaleLowerCase()))
+        .map(image => ({
         subjectId: subject.id,
         subjectLabel: subject.label,
         topicId: topic.id,

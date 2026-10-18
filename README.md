@@ -57,7 +57,7 @@ Every subject is organized into a folder with its topic page, optional interview
 
 The header loads discovered subject names and topic-page paths from generated `subjects/index.json`, not from hardcoded HTML links. Interview shortcuts appear only when an interview CSV and page are present. GitHub Pages does not expose a directory-listing API, so run the index generator or use the header refresh icon on localhost/HTTPS to scan a selected checkout and update the JSON indexes. Topic pages are view-only.
 
-Put Markdown files anywhere inside a topic folder and image files in that folder (commonly an `images/` subfolder); the index refresh finds supported image extensions recursively. The carousel supports touch/trackpad swiping, the grid shows all images, and selecting an image opens its full-size viewer. Facebook previews may still use generic page metadata rather than unique image metadata.
+Put Markdown files anywhere inside a topic folder. Keep images referenced by Markdown in the topic's `images/` folder; these are not shown in the topic card grid. Put standalone study-card images in the topic's `cards/` folder; these appear in a responsive grid below the Markdown content. Select a card to open it in the full-size viewer, then use Previous/Next buttons or the keyboard arrow keys to browse the topic's cards. The home-page quick revision gallery includes supported images from both `cards/` and `images/`. The index refresh discovers supported image extensions recursively. Facebook previews may still use generic page metadata rather than unique image metadata.
 
 To change published topic content, add or remove folders/files in the checkout, refresh the indexes, and commit both the content and generated JSON files.
 

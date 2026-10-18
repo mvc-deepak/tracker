@@ -16,6 +16,18 @@
       ],
       "images": [
         {
+          "file": "cards/async-vs-parallel.svg",
+          "alt": "Async I/O compared with parallel CPU work"
+        },
+        {
+          "file": "cards/async-best-practices.svg",
+          "alt": "C# asynchronous programming best practices"
+        },
+        {
+          "file": "cards/cancellation-flow.svg",
+          "alt": "Cancellation token flow through application layers"
+        },
+        {
           "file": "images/async-flow.svg",
           "alt": "Async and await flow"
         },
@@ -41,6 +53,10 @@
       ],
       "images": [
         {
+          "file": "cards/value-vs-reference.svg",
+          "alt": "Value types compared with reference types"
+        },
+        {
           "file": "images/oop-pillars.svg",
           "alt": "Object-oriented programming pillars"
         },
@@ -61,6 +77,10 @@
         }
       ],
       "images": [
+        {
+          "file": "cards/linq-pipeline.svg",
+          "alt": "LINQ query stages from source to execution"
+        },
         {
           "file": "images/linq-pipeline.svg",
           "alt": "LINQ query pipeline"

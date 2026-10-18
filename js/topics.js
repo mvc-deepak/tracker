@@ -7,11 +7,15 @@ let manifest = { topics: [] };
 let activeTopicId = topicQuery.get('topic') || '';
 let activeDocFile = topicQuery.get('doc') || '';
 let activeImage = null;
+let activeTopicCards = [];
+let activeTopicCardIndex = -1;
 let rootHandle = null;
 let subjectTopicsHandle = null;
 let localAccess = false;
 let scanInProgress = false;
 let localScanTimer = null;
+const TOPIC_READ_STORAGE_KEY = 'interviewPrep.topicReads.v1';
+let topicReadState;
 
 const topicById = id => manifest.topics.find(topic => topic.id === id);
 const currentTopic = () => topicById(activeTopicId);
@@ -23,6 +27,7 @@ const setNotice = (message, kind = 'info') => {
 };
 const safeSlug = value => value.trim().toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const resolveAsset = (topic, relativePath) => new URL(TOPIC_ROOT_URL + encodeURIComponent(topic.id) + '/' + relativePath.split('/').map(encodeURIComponent).join('/'), document.baseURI).href;
+const isImageInFolder = (image, folder) => String(image.file).split('/')[0].toLocaleLowerCase() === folder;
 
 function escapeTopicHTML(value) {
   return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
@@ -175,22 +180,88 @@ function updateTopicUrl() {
 
 function renderTopicNav() {
   $('topicCount').textContent = manifest.topics.length + (manifest.topics.length === 1 ? ' topic' : ' topics');
-  $('topicNav').innerHTML = manifest.topics.map(topic => `<a href="?topic=${encodeURIComponent(topic.id)}" data-topic-id="${escapeTopicHTML(topic.id)}" class="${topic.id === activeTopicId ? 'active' : ''}"${topic.id === activeTopicId ? ' aria-current="page"' : ''}><span>${escapeTopicHTML(topic.title)}</span><small>${topic.pages.length}</small></a>`).join('') || '<p class="muted">No topics have been added yet.</p>';
+  $('topicNav').innerHTML = manifest.topics.map(topic => {
+    const readPages = getTopicReadPages(topic.id);
+    const readCount = topic.pages.filter(page => readPages.has(page.file)).length;
+    const readClass = readCount === topic.pages.length && topic.pages.length ? 'topic-read-complete' : readCount ? 'topic-read-partial' : '';
+    return `<a href="?topic=${encodeURIComponent(topic.id)}" data-topic-id="${escapeTopicHTML(topic.id)}" class="${[topic.id === activeTopicId ? 'active' : '', readClass].filter(Boolean).join(' ')}"${topic.id === activeTopicId ? ' aria-current="page"' : ''}><span>${escapeTopicHTML(topic.title)}</span><small>${topic.pages.length}</small></a>`;
+  }).join('') || '<p class="muted">No topics have been added yet.</p>';
+}
+
+function getTopicReadState() {
+  if (topicReadState !== undefined) return topicReadState;
+  try {
+    const saved = JSON.parse(localStorage.getItem(TOPIC_READ_STORAGE_KEY) || '{}');
+    if (!saved || typeof saved !== 'object' || Array.isArray(saved)) throw new Error('Saved topic read data has an invalid format.');
+    for (const subjectTopics of Object.values(saved)) {
+      if (!subjectTopics || typeof subjectTopics !== 'object' || Array.isArray(subjectTopics)) throw new Error('Saved topic read data has an invalid format.');
+      for (const files of Object.values(subjectTopics)) {
+        if (!Array.isArray(files) || files.some(file => typeof file !== 'string')) throw new Error('Saved topic read data has an invalid format.');
+      }
+    }
+    topicReadState = saved;
+  } catch (error) {
+    setNotice('Could not load saved topic read progress: ' + error.message, 'error');
+    topicReadState = null;
+  }
+  return topicReadState;
+}
+
+function getTopicReadPages(topicId) {
+  const saved = getTopicReadState();
+  return new Set(saved?.[topicSubjectId]?.[topicId] || []);
+}
+
+function markTopicPageAsRead(topicId, file) {
+  const saved = getTopicReadState();
+  if (!saved) return;
+  const subjectTopics = saved[topicSubjectId] || (saved[topicSubjectId] = {});
+  const files = subjectTopics[topicId] || (subjectTopics[topicId] = []);
+  if (files.includes(file)) return;
+  files.push(file);
+  try {
+    localStorage.setItem(TOPIC_READ_STORAGE_KEY, JSON.stringify(saved));
+    renderTopicNav();
+  } catch (error) {
+    files.pop();
+    setNotice('Could not save topic read progress in browser storage: ' + error.message, 'error');
+  }
+}
+
+function getMarkdownSequence() {
+  return manifest.topics.flatMap(topic => topic.pages.map(page => ({ topic, page })));
+}
+
+function getAdjacentMarkdown(topicId, file, direction) {
+  const sequence = getMarkdownSequence();
+  const index = sequence.findIndex(entry => entry.topic.id === topicId && entry.page.file === file);
+  return index < 0 ? null : sequence[index + direction] || null;
 }
 
 function renderTopic() {
-  renderTopicNav();
   const topic = currentTopic();
   if (!topic) {
+    renderTopicNav();
     $('topicMain').innerHTML = '<div class="panel topic-empty"><h2>No topic selected</h2><p>Choose a topic from the sidebar.</p></div>';
     return;
   }
   const selectedDoc = topic.pages.find(page => page.file === activeDocFile) || topic.pages[0] || null;
   activeDocFile = selectedDoc?.file || '';
-  const pages = topic.pages.map(page => `<button type="button" class="topic-page-link${selectedDoc && page.file === selectedDoc.file ? ' active' : ''}" data-doc-file="${escapeTopicHTML(page.file)}"><span class="topic-page-icon">MD</span><span>${escapeTopicHTML(page.title)}</span></button>`).join('');
-  const images = topic.images.map((image, index) => `<button type="button" class="gallery-tile" data-image-index="${index}" aria-label="Open image ${escapeTopicHTML(image.alt || image.file)}"><img src="${escapeTopicHTML(resolveAsset(topic, image.file))}" alt="${escapeTopicHTML(image.alt || image.file)}" loading="lazy"><span>${escapeTopicHTML(image.alt || image.file)}</span></button>`).join('');
+  if (selectedDoc?.content !== undefined) markTopicPageAsRead(topic.id, selectedDoc.file);
+  renderTopicNav();
+  const readPages = getTopicReadPages(topic.id);
+  const pages = topic.pages.map(page => `<button type="button" class="topic-page-link${selectedDoc && page.file === selectedDoc.file ? ' active' : ''}${readPages.has(page.file) ? ' is-read' : ''}" data-doc-file="${escapeTopicHTML(page.file)}"><span class="topic-page-icon">MD</span><span>${escapeTopicHTML(page.title)}</span></button>`).join('');
+  const supportingImages = topic.images
+    .map((image, index) => ({ image, index }))
+    .filter(({ image }) => isImageInFolder(image, 'cards'));
+  activeTopicCards = supportingImages.map(({ image }) => image);
+  const cards = supportingImages.map(({ image }, index) => `<button type="button" class="topic-study-card" data-card-index="${index}" aria-label="Open study card: ${escapeTopicHTML(image.alt || image.file)}"><img src="${escapeTopicHTML(resolveAsset(topic, image.file))}" alt="${escapeTopicHTML(image.alt || image.file)}" loading="lazy"><span>${escapeTopicHTML(image.alt || image.file)}</span></button>`).join('');
+  const imagesHTML = supportingImages.length ? `<section class="topic-card"><div class="topic-section-heading"><div><h3>Topic cards</h3><p class="muted">Select a card to view it and browse other cards.</p></div><span class="muted">${supportingImages.length} ${supportingImages.length === 1 ? 'card' : 'cards'}</span></div><div class="topic-card-grid">${cards}</div></section>` : '';
+  const previous = selectedDoc ? getAdjacentMarkdown(topic.id, selectedDoc.file, -1) : null;
+  const next = selectedDoc ? getAdjacentMarkdown(topic.id, selectedDoc.file, 1) : null;
+  const markdownNavigation = selectedDoc ? `<nav class="markdown-page-navigation" aria-label="Markdown page navigation"><button type="button" class="button" data-markdown-topic="${escapeTopicHTML(previous?.topic.id || '')}" data-markdown-file="${escapeTopicHTML(previous?.page.file || '')}"${previous ? '' : ' disabled'}><span>← Previous</span>${previous ? `<small>${escapeTopicHTML(previous.topic.title)} · ${escapeTopicHTML(previous.page.title)}</small>` : ''}</button><button type="button" class="button" data-markdown-topic="${escapeTopicHTML(next?.topic.id || '')}" data-markdown-file="${escapeTopicHTML(next?.page.file || '')}"${next ? '' : ' disabled'}><span>Next →</span>${next ? `<small>${escapeTopicHTML(next.topic.title)} · ${escapeTopicHTML(next.page.title)}</small>` : ''}</button></nav>` : '';
   const mdHTML = selectedDoc ? `<article class="topic-card"><div class="markdown-heading-actions"><h3>${escapeTopicHTML(selectedDoc.title)}</h3></div><div class="markdown-content">${selectedDoc.content === undefined ? '<p class="muted">Loading notes…</p>' : markdownToHTML(selectedDoc.content, topic, selectedDoc.file)}</div></article>` : '<div class="topic-card topic-empty"><h3>No Markdown pages in this topic</h3></div>';
-  $('topicMain').innerHTML = `<div class="topic-content"><header class="topic-card topic-header"><div><p class="eyebrow">TOPIC</p><h2>${escapeTopicHTML(topic.title)}</h2><p>${escapeTopicHTML(topic.description || '')}</p></div></header><section class="topic-card"><div class="topic-section-heading"><div><h3>Notes and Markdown pages</h3><p class="muted">Open a page to read its notes.</p></div></div><div class="topic-pages">${pages || '<p class="topic-empty">No Markdown pages have been added yet.</p>'}</div></section>${mdHTML}<section class="topic-card"><div class="topic-section-heading"><div><h3>Topic images</h3><p class="muted">Swipe or drag through images. Select one to view it full size.</p></div><div class="topic-section-actions"><button class="button" type="button" data-gallery-toggle aria-expanded="false">View all (${topic.images.length})</button></div></div>${topic.images.length ? `<div class="gallery-controls"><button type="button" class="button" data-gallery-prev aria-label="Previous images">←</button><button type="button" class="button" data-gallery-next aria-label="Next images">→</button><span class="muted">Swipe to browse</span></div><div class="gallery-track" id="imageCarousel">${images}</div><div class="gallery-grid" id="imageGrid" hidden>${images}</div>` : '<p class="topic-empty">No supporting images for this topic yet.</p>'}</section></div>`;
+  $('topicMain').innerHTML = `<div class="topic-content"><header class="topic-card topic-header"><div><p class="eyebrow">TOPIC</p><h2>${escapeTopicHTML(topic.title)}</h2><p>${escapeTopicHTML(topic.description || '')}</p></div></header><section class="topic-card"><div class="topic-section-heading"><div><h3>Notes and Markdown pages</h3><p class="muted">Open a page to read its notes.</p></div></div><div class="topic-pages">${pages || '<p class="topic-empty">No Markdown pages have been added yet.</p>'}</div></section>${mdHTML}${imagesHTML}${markdownNavigation}</div>`;
   if (selectedDoc && selectedDoc.content === undefined) loadMarkdown(topic, selectedDoc);
 }
 
@@ -262,6 +333,7 @@ async function saveTopicFromForm(event) {
       } catch (error) { if (error.name !== 'NotFoundError') throw error; }
       manifest.topics.push(topic);
       await resolveDirectory(id, true);
+      await resolveDirectory(id + '/cards', true);
       await writeLocalText(id + '/overview.md', `# ${title}\n\nAdd your notes for this topic here.\n`);
       activeTopicId = id;
       activeDocFile = 'overview.md';
@@ -369,11 +441,38 @@ async function addImages(fileList) {
   $('imageUpload').value = '';
 }
 
-function openImage(image) {
+function updateTopicCardViewer() {
+  if (activeTopicCardIndex < 0 || activeTopicCardIndex >= activeTopicCards.length) return;
+  activeImage = activeTopicCards[activeTopicCardIndex];
+  $('fullImage').src = resolveAsset(currentTopic(), activeImage.file);
+  $('fullImage').alt = activeImage.alt || activeImage.file;
+  $('imageViewerCaption').textContent = activeImage.alt || activeImage.file;
+  $('previousCard').hidden = false;
+  $('nextCard').hidden = false;
+  $('previousCard').disabled = activeTopicCardIndex === 0;
+  $('nextCard').disabled = activeTopicCardIndex === activeTopicCards.length - 1;
+  $('previousCard').setAttribute('aria-label', 'Previous card');
+  $('nextCard').setAttribute('aria-label', 'Next card');
+}
+
+function navigateTopicCard(direction) {
+  const nextIndex = activeTopicCardIndex + direction;
+  if (nextIndex < 0 || nextIndex >= activeTopicCards.length) return;
+  activeTopicCardIndex = nextIndex;
+  updateTopicCardViewer();
+}
+
+function openImage(image, cardIndex = -1) {
   activeImage = image;
-  const topic = currentTopic();
-  $('fullImage').src = /^(https?:|blob:|data:)/i.test(image.file) ? image.file : resolveAsset(topic, image.file);
-  $('fullImage').alt = image.alt || image.file;
+  activeTopicCardIndex = cardIndex;
+  if (cardIndex >= 0) updateTopicCardViewer();
+  else {
+    $('fullImage').src = /^(https?:|blob:|data:)/i.test(image.file) ? image.file : resolveAsset(currentTopic(), image.file);
+    $('fullImage').alt = image.alt || image.file;
+    $('imageViewerCaption').textContent = image.alt || image.file;
+    $('previousCard').hidden = true;
+    $('nextCard').hidden = true;
+  }
   $('imageDialog').showModal();
   $('closeImage').focus();
 }
@@ -530,15 +629,14 @@ async function loadStaticManifest() {
   const subjectEntry = SUBJECTS.find(entry => entry.id === topicSubjectId);
   if (subjectEntry) {
     document.title = 'Interview Prep · ' + subjectEntry.label + ' Topics';
-    $('subjectLibraryHeading').textContent = subjectEntry.label + ' Topics';
-    $('subjectLibraryEyebrow').textContent = subjectEntry.label.toLocaleUpperCase() + ' STUDY LIBRARY';
+    $('subjectLibraryHeading').textContent = subjectEntry.label;
     $('topicNav').setAttribute('aria-label', subjectEntry.label + ' topic navigation');
   }
   const interviewLink = document.getElementById('topicInterviewLink');
   const subject = subjectEntry;
   if (interviewLink && subject?.interviewPage) {
     interviewLink.href = (document.body.dataset.root || '../../') + 'subjects/' + topicSubjectId + '/' + subject.interviewPage;
-    interviewLink.textContent = subject.label + ' interview questions →';
+    interviewLink.textContent = 'Interview questions →';
     try { if (!(await (await fetch(interviewLink.href, { method: 'HEAD', cache: 'no-cache' })).ok)) interviewLink.hidden = true; }
     catch { interviewLink.hidden = true; }
   } else if (interviewLink) interviewLink.hidden = true;
@@ -567,6 +665,15 @@ $('topicNav').addEventListener('click', event => {
   renderTopic();
 });
 $('topicMain').addEventListener('click', event => {
+  const markdownButton = event.target.closest('[data-markdown-topic]');
+  if (markdownButton && !markdownButton.disabled) {
+    activeTopicId = markdownButton.dataset.markdownTopic;
+    activeDocFile = markdownButton.dataset.markdownFile;
+    updateTopicUrl();
+    renderTopic();
+    document.querySelector('.markdown-heading-actions')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    return;
+  }
   const docButton = event.target.closest('[data-doc-file]');
   if (docButton) {
     activeDocFile = docButton.dataset.docFile;
@@ -574,25 +681,14 @@ $('topicMain').addEventListener('click', event => {
     renderTopic();
     return;
   }
-  const imageButton = event.target.closest('[data-image-index]');
-  if (imageButton) { openImage(currentTopic().images[Number(imageButton.dataset.imageIndex)]); return; }
+  const cardButton = event.target.closest('[data-card-index]');
+  if (cardButton) { openImage(activeTopicCards[Number(cardButton.dataset.cardIndex)], Number(cardButton.dataset.cardIndex)); return; }
   const markdownImage = event.target.closest('[data-topic-image]');
   if (markdownImage) {
     const match = currentTopic().images.find(image => resolveAsset(currentTopic(), image.file) === markdownImage.src);
     openImage(match || { file: markdownImage.src, alt: markdownImage.alt, deletable: false });
     return;
   }
-  const toggle = event.target.closest('[data-gallery-toggle]');
-  if (toggle) {
-    const grid = $('imageGrid');
-    grid.hidden = !grid.hidden;
-    toggle.setAttribute('aria-expanded', String(!grid.hidden));
-    toggle.textContent = grid.hidden ? `View all (${currentTopic().images.length})` : 'Hide image grid';
-    return;
-  }
-  const prev = event.target.closest('[data-gallery-prev]');
-  const next = event.target.closest('[data-gallery-next]');
-  if (prev || next) $('imageCarousel').scrollBy({ left: (next ? 1 : -1) * $('imageCarousel').clientWidth * 0.8, behavior: 'smooth' });
 });
 $('topicMain').addEventListener('keydown', event => {
   const image = event.target.closest('[data-topic-image]');
@@ -612,10 +708,31 @@ $('topicMain').addEventListener('error', event => {
 }, true);
 $('topicMain').addEventListener('dragstart', event => { if (event.target.matches('.gallery-tile img')) event.preventDefault(); });
 $('closeImage').addEventListener('click', () => $('imageDialog').close());
+$('previousCard').addEventListener('click', () => navigateTopicCard(-1));
+$('nextCard').addEventListener('click', () => navigateTopicCard(1));
+$('imageDialog').addEventListener('keydown', event => {
+  if (activeTopicCardIndex < 0) return;
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault();
+    navigateTopicCard(-1);
+  } else if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    navigateTopicCard(1);
+  }
+});
+$('imageDialog').addEventListener('close', () => {
+  activeTopicCardIndex = -1;
+  activeImage = null;
+});
 $('shareImage').addEventListener('click', shareCurrentImage);
 $('imageDialog').addEventListener('click', event => { if (event.target === $('imageDialog')) $('imageDialog').close(); });
 window.addEventListener('focus', () => { if (localAccess) scanLocalTopics(true, true); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && localAccess) scanLocalTopics(true, true); });
+window.addEventListener('storage', event => {
+  if (event.key !== TOPIC_READ_STORAGE_KEY) return;
+  topicReadState = undefined;
+  renderTopicNav();
+});
 loadStaticManifest().catch(error => {
   $('topicCount').textContent = 'Unavailable';
   $('topicMain').innerHTML = '<div class="panel topic-empty"><h2>Topic library unavailable</h2><p>' + escapeTopicHTML(error.message) + '</p><p>Run this page through a local web server or GitHub Pages, not file://.</p></div>';

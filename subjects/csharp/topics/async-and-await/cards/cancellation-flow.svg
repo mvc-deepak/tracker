@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+  <title id="title">Cancellation token flow</title>
+  <desc id="desc">A caller passes a cancellation token through an application service to cancellable operations.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff4e5"/>
+      <stop offset="1" stop-color="#eef5ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="560" rx="32" fill="url(#bg)"/>
+  <text x="56" y="78" fill="#a66608" font-family="Segoe UI, sans-serif" font-size="20" font-weight="700" letter-spacing="3">C# STUDY CARD</text>
+  <text x="56" y="136" fill="#202b3c" font-family="Segoe UI, sans-serif" font-size="42" font-weight="750">Cancellation flows down</text>
+  <text x="56" y="184" fill="#526174" font-family="Segoe UI, sans-serif" font-size="20">Pass the caller’s token to each cancellable operation.</text>
+  <g font-family="Segoe UI, sans-serif">
+    <rect x="64" y="242" width="202" height="114" rx="20" fill="#fff" stroke="#f0d6ab" stroke-width="2"/>
+    <text x="165" y="284" text-anchor="middle" fill="#875700" font-size="17" font-weight="700">CALLER</text>
+    <text x="165" y="322" text-anchor="middle" fill="#202b3c" font-size="19">CancellationToken</text>
+    <path d="M276 299h54" stroke="#a66608" stroke-width="5" stroke-linecap="round"/>
+    <path d="m318 288 13 11-13 11" fill="none" stroke="#a66608" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="344" y="242" width="202" height="114" rx="20" fill="#fff" stroke="#bfd2f4" stroke-width="2"/>
+    <text x="445" y="284" text-anchor="middle" fill="#254f9e" font-size="17" font-weight="700">SERVICE</text>
+    <text x="445" y="322" text-anchor="middle" fill="#202b3c" font-size="19">FindAsync(token)</text>
+    <path d="M556 299h54" stroke="#3269d5" stroke-width="5" stroke-linecap="round"/>
+    <path d="m598 288 13 11-13 11" fill="none" stroke="#3269d5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="624" y="242" width="272" height="114" rx="20" fill="#fff" stroke="#b6e7d5" stroke-width="2"/>
+    <text x="760" y="284" text-anchor="middle" fill="#16856b" font-size="17" font-weight="700">HTTP / DATABASE</text>
+    <text x="760" y="322" text-anchor="middle" fill="#202b3c" font-size="19">SendAsync(token)</text>
+  </g>
+  <path d="M824 404H136" stroke="#c98219" stroke-width="4" stroke-linecap="round" stroke-dasharray="10 10"/>
+  <path d="m151 393-15 11 15 11" fill="none" stroke="#c98219" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="480" y="450" text-anchor="middle" fill="#875700" font-family="Segoe UI, sans-serif" font-size="18" font-weight="650">Cancellation is cooperative: each operation must observe the signal.</text>
+</svg>
