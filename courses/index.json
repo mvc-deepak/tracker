@@ -1,0 +1,15 @@
+{
+  "courses": [
+    ".NET Microservices with Azure DevOps & AKS.csv",
+    "Azure Infrastructure.csv",
+    "Azure Kubernetes Service with Azure DevOps and Terraform.csv",
+    "Claude.csv",
+    "Design Patterns.csv",
+    "Github Actions.csv",
+    "NET Core Microservices.csv",
+    "React.csv",
+    "Software Architecture.csv",
+    "System Design.csv",
+    "Terraform on Azure.csv"
+  ]
+}

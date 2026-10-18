@@ -1,0 +1,30 @@
+Section Name,Lectures,Duration,Status,Completion Date,Notes
+,,,,,
+A First Look at React,9,1hr 16min,Pending,,PART 1: REACT FUNDAMENTALS [4 PROJECTS]
+[Optional] Review of Essential JavaScript for React,15,1hr 52min,Pending,,PART 1: REACT FUNDAMENTALS [4 PROJECTS]
+"Working With Components, Props, and JSX",24,2hr 54min,Pending, ,PART 1: REACT FUNDAMENTALS [4 PROJECTS]
+"State, Events, and Forms: Interactive Components",21,2hr 55min,Pending,,PART 1: REACT FUNDAMENTALS [4 PROJECTS]
+Thinking In React: State Management,17,2hr 42min,Pending,,PART 1: REACT FUNDAMENTALS [4 PROJECTS]
+[Optional] Practice Project: Eat-'N-Split,9,1hr 29min,Pending,,PART 1: REACT FUNDAMENTALS [4 PROJECTS]
+,,,,,
+"Thinking in React: Components, Composition, and Reusability",17,2hr 39min,Pending,,PART 2: INTERMEDIATE REACT [2 PROJECTS]
+How React Works Behind the Scenes,18,2hr 38min,Pending,,PART 2: INTERMEDIATE REACT [2 PROJECTS]
+Effects and Data Fetching,19,3hr 13min,Pending,,PART 2: INTERMEDIATE REACT [2 PROJECTS]
+"Custom Hooks, Refs, and More State",15,2hr 2min,Pending,,PART 2: INTERMEDIATE REACT [2 PROJECTS]
+[Optional] React Before Hooks: Class-Based React,10,1hr 22min,Pending,,PART 2: INTERMEDIATE REACT [2 PROJECTS]
+,,,,,
+The Advanced useReducer Hook,17,3hr 16min,Pending,,PART 3: ADVANCED REACT + REDUX [4 PROJECTS]
+React Router: Building Single-Page Applications (SPA),17,2hr 59min,Pending,,PART 3: ADVANCED REACT + REDUX [4 PROJECTS]
+Advanced State Management: The Context API,22,4hr 7min,Pending,,PART 3: ADVANCED REACT + REDUX [4 PROJECTS]
+Performance Optimization and Advanced useEffect,18,2hr 57min,Pending,,PART 3: ADVANCED REACT + REDUX [4 PROJECTS]
+Redux and Modern Redux Toolkit (With Thunks),19,2hr 57min,Pending,,PART 3: ADVANCED REACT + REDUX [4 PROJECTS]
+,,,,,
+React Router With Data Loading (v6.4+),12,2hr 7min,Pending,,PART 4: PROFESSIONAL REACT DEVELOPMENT [2 PROJECTS]
+[Optional] Tailwind CSS Crash Course: Styling the App,19,3hr 15min,Pending,,PART 4: PROFESSIONAL REACT DEVELOPMENT [2 PROJECTS]
+Adding Redux and Advanced React Router,14,2hr 44min,Pending,,PART 4: PROFESSIONAL REACT DEVELOPMENT [2 PROJECTS]
+Setting Up Our Biggest Project + Styled Components,11,1hr 50min,Pending,,PART 4: PROFESSIONAL REACT DEVELOPMENT [2 PROJECTS]
+Supabase Crash Course: Building a Back-End!,9,52min,Pending,,PART 4: PROFESSIONAL REACT DEVELOPMENT [2 PROJECTS]
+React Query: Managing Remote State,18,3hr 18min,Pending,,PART 4: PROFESSIONAL REACT DEVELOPMENT [2 PROJECTS]
+Advanced React Patterns,13,2hr 40min,Pending,,PART 4: PROFESSIONAL REACT DEVELOPMENT [2 PROJECTS]
+"[Optional] Implementing More Features: Authentication, Dark Mode, Dashboard, etc",33,7hr 51min,Pending,,PART 4: PROFESSIONAL REACT DEVELOPMENT [2 PROJECTS]
+Deployment With Netlify and Vercel,4,35min,Pending,,PART 4: PROFESSIONAL REACT DEVELOPMENT [2 PROJECTS]

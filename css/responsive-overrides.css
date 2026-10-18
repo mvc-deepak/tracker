@@ -1,0 +1,4 @@
+/* Shared responsive header behavior. */
+@media (max-width: 767px) {
+  .topbar .refresh-indexes-button { display: none !important; }
+}

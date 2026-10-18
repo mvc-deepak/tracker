@@ -1,0 +1,36 @@
+{
+  "subjects": [
+    {
+      "id": "dotnet",
+      "label": ".NET",
+      "description": "ASP.NET Core, APIs, architecture and cloud.",
+      "csvFile": "dotnet.csv",
+      "topicsPage": "dotnet.html",
+      "interviewPage": "dotnet_interview.html"
+    },
+    {
+      "id": "csharp",
+      "label": "C#",
+      "description": "Language fundamentals, async, collections and OOP.",
+      "csvFile": "csharp.csv",
+      "topicsPage": "csharp.html",
+      "interviewPage": "csharp_interview.html"
+    },
+    {
+      "id": "react",
+      "label": "React",
+      "description": "Components, hooks, state and frontend patterns.",
+      "csvFile": "react.csv",
+      "topicsPage": "react.html",
+      "interviewPage": "react_interview.html"
+    },
+    {
+      "id": "sql",
+      "label": "SQL",
+      "description": "Queries, joins, indexes and performance.",
+      "csvFile": "sql.csv",
+      "topicsPage": "sql.html",
+      "interviewPage": "sql_interview.html"
+    }
+  ]
+}

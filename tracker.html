@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Course Progress · Study Tracker</title>
+  <link rel="stylesheet" href="css/style.css?v=lightbox-swipe-3">
+  <link rel="stylesheet" href="css/tracker.css?v=course-tracker-1">
+  <link rel="stylesheet" href="css/responsive-overrides.css">
+  <link rel="stylesheet" href="css/tracker-courses.css?v=1">
+</head>
+<body data-page="tracker">
+  <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark">IP</span><span><strong>Interview Prep</strong><small>Software engineering</small></span></a><nav id="siteNav" class="topnav" aria-label="Main navigation"></nav><button id="themeToggle" class="icon-button" aria-label="Toggle theme">☾</button></header>
+  <main class="wrap tracker-wrap">
+    <section class="tracker-hero">
+      <div><p class="eyebrow">COURSE STUDY PLAN</p><h1>Course progress tracker</h1><p class="muted">18 October 2026 – 31 January 2027 · Completion is weighted by course hours.</p></div>
+      <div class="tracker-save"><span id="trackerSaveState" class="muted" role="status">Published course data · read only</span><button id="connectTracker" class="button primary" type="button">Choose local checkout</button></div>
+    </section>
+    <div id="trackerNotice" class="notice" role="status" hidden></div>
+    <section id="trackerSummary" class="tracker-summary" aria-label="Overall study progress"></section>
+    <section class="panel course-overview-panel">
+      <div class="panel-heading"><div><h2>All courses</h2><p class="muted">Select a course to inspect chapters, workload, and completion history.</p></div><span class="course-overview-caption">📚 11 courses</span></div>
+      <div id="courseOverview" class="course-overview" aria-live="polite"><p class="muted">Loading course CSV files…</p></div>
+    </section>
+    <section class="panel course-detail-panel" aria-labelledby="courseDetailHeading">
+      <div id="courseDetail"><div class="course-detail-empty"><span>🧭</span><h2 id="courseDetailHeading">Choose a course above</h2><p class="muted">The overview and each course’s progress are available as soon as the tracker loads.</p></div></div>
+    </section>
+    <footer>Choose your local checkout in Chrome or Edge on localhost/HTTPS to update course CSV statuses and completion dates. Review and commit the changed CSV files.</footer>
+  </main>
+  <script src="js/common.js?v=subjects-16"></script><script src="js/tracker.js?v=course-tracker-1"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+{
+  "topics": [
+    {
+      "id": "async-and-await",
+      "title": "Async and Await",
+      "description": "Asynchronous I/O, cancellation, and responsive applications.",
+      "pages": [
+        {
+          "file": "cancellation.md",
+          "title": "Cancellation tokens"
+        },
+        {
+          "file": "overview.md",
+          "title": "Overview"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/async-flow.svg",
+          "alt": "Async and await flow"
+        },
+        {
+          "file": "images/cancellation.svg",
+          "alt": "Cancellation token flow"
+        }
+      ]
+    },
+    {
+      "id": "csharp-fundamentals",
+      "title": "C# Fundamentals",
+      "description": "Types, object-oriented design, and modern C# language features.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "Overview"
+        },
+        {
+          "file": "records-and-types.md",
+          "title": "Records and types"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/oop-pillars.svg",
+          "alt": "Object-oriented programming pillars"
+        },
+        {
+          "file": "images/type-system.svg",
+          "alt": "C# type system overview"
+        }
+      ]
+    },
+    {
+      "id": "linq-and-collections",
+      "title": "LINQ and Collections",
+      "description": "Collection choices, deferred execution, and efficient queries.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "Overview"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/linq-pipeline.svg",
+          "alt": "LINQ query pipeline"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+Section Name,Lectures,Duration,Status,Completion Date,Notes
+Getting Started,7,15min,Not Started,,
+Git & GitHub Crash Course [Optional],26,2hr,Not Started,,
+GitHub Actions - Basic Building Blocks & Components,20,1hr 40min,Not Started,,
+Workflows & Events - Deep Dive,10,38min,Not Started,,
+Job Artifacts & Outputs,13,51min,Not Started,,
+Using Environment Variables & Secrets,9,37min,Not Started,,
+Controlling Workflow & Job Execution,16,1hr 12min,Not Started,,
+Jobs & Docker Containers,9,40min,Not Started,,
+Building & Using Custom Actions,20,1hr 34min,Not Started,,
+Security & Permissions,11,52min,Not Started,,
+Wrap Up,2,1min,Not Started,,
