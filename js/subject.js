@@ -4,6 +4,7 @@ let subject = null;
 const siteRoot = document.body.dataset.root || '../../';
 const questionPageHref = () => siteRoot + 'subjects/' + subjectId + '/' + (subject?.interviewPage || subjectId + '_interview.html');
 const BANK_STORAGE_KEY = 'interviewPrep.bank.v1';
+const READ_STORAGE_KEY = 'interviewPrep.read.v1';
 let items = [];
 let renderQuestions = () => {};
 let checkoutHandle = null;
@@ -11,7 +12,60 @@ let questionCsvHandle = null;
 let questionCsvBaseline = '';
 let questionCsvDirty = false;
 const requestedQuestionId = new URLSearchParams(window.location.search).get('id');
+let readQuestionKeys = new Set();
 const subjectReady = subjectsReady.then(() => { subject = SUBJECTS.find(entry => entry.id === subjectId); return subject; });
+
+function loadReadQuestions() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(READ_STORAGE_KEY) || '{}');
+    const keys = saved[subject.id];
+    if (keys !== undefined && !Array.isArray(keys)) throw new Error('Saved read-question data has an invalid format.');
+    readQuestionKeys = new Set(Array.isArray(keys) ? keys.filter(key => typeof key === 'string') : []);
+  } catch (error) {
+    readQuestionKeys = new Set();
+    showNotice('Could not load saved read-question markers: ' + error.message, 'error');
+  }
+}
+
+function renderSubjectStats() {
+  const stats = $('subjectStats');
+  if (!stats || !subject) return;
+  const revisedCount = items.filter(item => item.status === 'Revised').length;
+  const learningCount = items.filter(item => item.status === 'Learning').length;
+  const readCount = items.filter(item => readQuestionKeys.has(item.key)).length;
+  stats.innerHTML = '<span class="mini-stat"><strong>' + items.length + '</strong> total</span><span class="mini-stat"><strong>' + revisedCount + '</strong> revised</span><span class="mini-stat"><strong>' + learningCount + '</strong> learning</span><span class="mini-stat read-stat"><strong>' + readCount + '</strong> read</span>';
+}
+
+function markQuestionAsRead(key) {
+  try {
+    if (!readQuestionKeys.has(key)) {
+      const saved = JSON.parse(localStorage.getItem(READ_STORAGE_KEY) || '{}');
+      if (!saved || typeof saved !== 'object' || Array.isArray(saved)) throw new Error('Saved read-question data has an invalid format.');
+      const keys = saved[subject.id] === undefined ? [] : saved[subject.id];
+      if (!Array.isArray(keys) || keys.some(value => typeof value !== 'string')) throw new Error('Saved read-question data has an invalid format.');
+      if (!keys.includes(key)) keys.push(key);
+      saved[subject.id] = keys;
+      localStorage.setItem(READ_STORAGE_KEY, JSON.stringify(saved));
+      readQuestionKeys.add(key);
+      renderSubjectStats();
+    }
+    const activity = JSON.parse(localStorage.getItem(READ_TODAY_STORAGE_KEY) || '{}');
+    if (!activity || typeof activity !== 'object' || Array.isArray(activity)) throw new Error('Saved daily reading data has an invalid format.');
+    const today = new Date();
+    const dateKey = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    const entry = activity[subject.id];
+    const todayKeys = entry && entry.date === dateKey ? entry.keys : [];
+    if (!Array.isArray(todayKeys) || todayKeys.some(value => typeof value !== 'string')) throw new Error('Saved daily reading data has an invalid format.');
+    if (!todayKeys.includes(key)) todayKeys.push(key);
+    activity[subject.id] = { date: dateKey, keys: todayKeys };
+    localStorage.setItem(READ_TODAY_STORAGE_KEY, JSON.stringify(activity));
+    window.dispatchEvent(new Event('question-read-today-updated'));
+    return true;
+  } catch (error) {
+    showNotice('Could not save this question as read in browser storage: ' + error.message, 'error');
+    return false;
+  }
+}
 
 function shareIdFor(item) {
   return keyFor(subject.id, item.question).split(':').pop();
@@ -293,7 +347,7 @@ function openEditor(item = null) {
 function installManagementControls() {
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = siteRoot + 'css/question-admin.css?v=question-action-row-3';
+  stylesheet.href = siteRoot + 'css/question-admin.css?v=read-count-1';
   document.head.append(stylesheet);
   const toolbar = document.querySelector('.subject-toolbar');
   const actions = document.createElement('div');
@@ -349,7 +403,7 @@ subjectReady.then(() => {
         const selectedSharedItem = requestedQuestionId ? matchingItems.find(item => shareIdFor(item) === requestedQuestionId) : null;
         const filtered = requestedQuestionId ? (selectedSharedItem ? [selectedSharedItem] : []) : matchingItems;
         $('resultCount').textContent = requestedQuestionId ? (filtered.length ? 'Shared question' : 'Shared question not found') : filtered.length + ' of ' + items.length + ' questions';
-        $('subjectStats').innerHTML = '<span class="mini-stat"><strong>' + items.length + '</strong> total</span><span class="mini-stat"><strong>' + items.filter(item => item.status === 'Revised').length + '</strong> revised</span><span class="mini-stat"><strong>' + items.filter(item => item.status === 'Learning').length + '</strong> learning</span>';
+        renderSubjectStats();
         if (!filtered.length) {
           $('questionList').innerHTML = requestedQuestionId ? '<div class="empty"><strong>This shared question could not be found.</strong><p>The question may have been removed or its content changed. Open the subject page to browse all questions.</p><a class="button" href="' + escapeHTML(questionPageHref()) + '">View all ' + escapeHTML(subject.label) + ' questions</a></div>' : '<div class="empty">No questions match. Try clearing the filters or add a question to this subject.</div>';
           return;
@@ -359,12 +413,29 @@ subjectReady.then(() => {
           const questionNumber = items.indexOf(item) + 1;
           const sharedAnswer = answerHTML(item.answer);
           const shareActions = shareActionsHTML(item, questionNumber - 1);
-          return `<details class="question" id="question-${escapeHTML(shareIdFor(item))}"${requestedQuestionId ? ' open' : ''}><summary><span class="question-number">${questionNumber}.</span><span class="question-title">${escapeHTML(item.question)}</span><span class="question-meta"><span class="chip">${escapeHTML(item.concept)}</span><span class="chip">${escapeHTML(item.language)}</span><span class="chip">Importance ${item.importance}/5</span><span class="chip status-${escapeHTML(item.status)}">${escapeHTML(item.status)}</span></span></summary><div class="answer">${sharedAnswer}<div class="question-controls"><label class="question-status-control">Study status <select data-status-key="${escapeHTML(item.key)}" aria-label="Study status for ${escapeHTML(item.question)}" ${checkoutHandle ? '' : 'disabled'}>${STATUSES.map(value => `<option${item.status === value ? ' selected' : ''}>${value}</option>`).join('')}</select></label><div class="question-actions">${shareActions}<button type="button" class="icon-action" data-edit="${escapeHTML(item.key)}" aria-label="Edit question" title="Edit question" ${checkoutHandle ? '' : 'disabled'}>✏️</button><button type="button" class="icon-action danger-icon-action" data-delete="${escapeHTML(item.key)}" aria-label="Delete question" title="Delete question" ${checkoutHandle ? '' : 'disabled'}>🗑️</button></div></div></div></details>`;
+          const isRead = readQuestionKeys.has(item.key);
+          return `<details class="question${isRead ? ' is-read' : ''}" data-read-key="${escapeHTML(item.key)}" id="question-${escapeHTML(shareIdFor(item))}"${requestedQuestionId ? ' open' : ''}><summary><span class="question-number">${questionNumber}.</span><span class="question-title">${escapeHTML(item.question)}</span><span class="question-read-badge" aria-label="Read">✓ Read</span><span class="question-meta"><span class="chip">${escapeHTML(item.concept)}</span><span class="chip">${escapeHTML(item.language)}</span><span class="chip">Importance ${item.importance}/5</span><span class="chip status-${escapeHTML(item.status)}">${escapeHTML(item.status)}</span></span></summary><div class="answer">${sharedAnswer}<div class="question-controls"><label class="question-status-control">Study status <select data-status-key="${escapeHTML(item.key)}" aria-label="Study status for ${escapeHTML(item.question)}" ${checkoutHandle ? '' : 'disabled'}>${STATUSES.map(value => `<option${item.status === value ? ' selected' : ''}>${value}</option>`).join('')}</select></label><div class="question-actions">${shareActions}<button type="button" class="icon-action" data-edit="${escapeHTML(item.key)}" aria-label="Edit question" title="Edit question" ${checkoutHandle ? '' : 'disabled'}>✏️</button><button type="button" class="icon-action danger-icon-action" data-delete="${escapeHTML(item.key)}" aria-label="Delete question" title="Delete question" ${checkoutHandle ? '' : 'disabled'}>🗑️</button></div></div></div></details>`;
         }).join('');
         if (requestedQuestionId) document.title = 'Shared question · ' + filtered[0].question + ' | ' + subject.label;
       };
       renderQuestions = render;
+      loadReadQuestions();
+      $('questionList').addEventListener('toggle', event => {
+        const question = event.target;
+        if (!(question instanceof HTMLDetailsElement) || !question.matches('.question') || !question.open) return;
+        const key = question.dataset.readKey;
+        if (!key) return;
+        markQuestionAsRead(key);
+        question.classList.add('is-read');
+      }, true);
       render();
+      if (requestedQuestionId) {
+        const sharedQuestion = $('questionList').querySelector('details.question[open]');
+        if (sharedQuestion?.dataset.readKey) {
+          markQuestionAsRead(sharedQuestion.dataset.readKey);
+          sharedQuestion.classList.add('is-read');
+        }
+      }
       $('search').addEventListener('input', render);
       $('statusFilter').addEventListener('change', render);
       $('importanceFilter').addEventListener('change', render);
