@@ -1,0 +1,2 @@
+Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"Why should an application validate a Claude response before using it?","Model output is generated text and may be incomplete, malformed, or outside the expected schema. Validate structure and business rules, handle refusals and tool results explicitly, and avoid treating generated output as trusted input.","LLM Output Validation","Claude","Not Started","3"

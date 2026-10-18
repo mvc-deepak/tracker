@@ -1,0 +1,2 @@
+Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"Why are stateless application servers easier to scale horizontally?","If an instance does not keep session state locally, any healthy instance can handle the next request. This makes instances easier to add, remove, or replace. Shared state still needs an appropriate external store and consistency strategy.","Horizontal Scaling","System Design","Not Started","3"

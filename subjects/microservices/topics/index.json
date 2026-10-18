@@ -1,0 +1,21 @@
+{
+  "topics": [
+    {
+      "id": "service-boundaries",
+      "title": "Service Boundaries",
+      "description": "A simple request path across independently owned services.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "A request across service boundaries"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "Client request routed through order and payment services"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "topics": [
+    {
+      "id": "pull-request-workflow",
+      "title": "Pull Request Workflow",
+      "description": "A branch-to-merge pull request review workflow.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "From branch to reviewed change"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "Feature branch, pull request, and reviewed merge"
+        }
+      ]
+    }
+  ]
+}

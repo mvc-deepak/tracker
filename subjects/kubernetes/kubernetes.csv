@@ -1,0 +1,2 @@
+Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"What is the relationship between a Kubernetes Deployment, Pods, and a Service?","A Deployment declares the desired replica count and manages ReplicaSets. ReplicaSets create and replace Pods. A Service provides a stable network endpoint that routes traffic to matching Pods.","Kubernetes Workloads","Kubernetes","Not Started","3"

@@ -1,3 +1,21 @@
 {
-  "topics": []
+  "topics": [
+    {
+      "id": "react-state-flow",
+      "title": "React State Flow",
+      "description": "A component owns state and passes values to rendered child UI.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "React state flows through components"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "React state owner, props, and rendered UI"
+        }
+      ]
+    }
+  ]
 }

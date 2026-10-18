@@ -323,7 +323,7 @@ async function loadPublishedCourses() {
   if (!names.length) throw new Error('courses/index.json does not list any valid CSV filenames.');
   const loaded = await Promise.all(names.map(async fileName => {
     const csvResponse = await fetch('courses/' + encodeURIComponent(fileName), { cache: 'no-cache' });
-    if (!csvResponse.ok) throw new Error('Could not load courses/' + fileName + '.');
+    if (!csvResponse.ok) throw new Error('Could not load courses/' + fileName + ' (HTTP ' + csvResponse.status + '). Verify the CSV is committed and published and its filename matches courses/index.json.');
     return parseCourseCsv(await csvResponse.text(), fileName);
   }));
   trackerCourses = loaded.sort((a, b) => a.title.localeCompare(b.title));
@@ -331,16 +331,11 @@ async function loadPublishedCourses() {
   renderTracker();
 }
 
-async function connectTrackerCheckout() {
-  if (!window.showDirectoryPicker) {
-    setTrackerNotice('CSV editing requires a current version of Chrome or Edge and a localhost or HTTPS page.', 'error');
-    return;
-  }
+async function connectTrackerCheckout(root) {
+  if (!root) return;
   if (hasUnsavedCourseChanges() && !window.confirm('Discard unsaved course changes before connecting a checkout?')) return;
   try {
-    const root = await window.showDirectoryPicker({ id: 'course-progress-tracker', mode: 'readwrite', startIn: 'documents' });
-    let permission = await root.queryPermission({ mode: 'readwrite' });
-    if (permission !== 'granted') permission = await root.requestPermission({ mode: 'readwrite' });
+    const permission = await root.queryPermission({ mode: 'readwrite' });
     if (permission !== 'granted') throw new Error('Read/write access to the selected checkout was not granted.');
     const courseDirectory = await root.getDirectoryHandle('courses');
     if (typeof courseDirectory.values !== 'function') throw new Error('This browser cannot enumerate the courses folder. Update Chrome or Edge and try again.');
@@ -364,6 +359,10 @@ async function connectTrackerCheckout() {
     if (error.name !== 'AbortError') setTrackerNotice('Could not connect to the local checkout: ' + error.message, 'error');
   }
 }
+
+document.addEventListener('local-checkout-selected', event => {
+  connectTrackerCheckout(event.detail.handle);
+});
 
 function handleSectionChange(event) {
   const control = event.target.closest('[data-status], [data-completion]');
@@ -412,7 +411,6 @@ async function saveCourseCsv(fileName) {
 }
 
 function attachTrackerEvents() {
-  $('connectTracker').addEventListener('click', connectTrackerCheckout);
   $('courseOverview').addEventListener('click', event => {
     const button = event.target.closest('[data-course-file]');
     if (!button) return;
@@ -444,7 +442,7 @@ async function initTracker() {
     await loadPublishedCourses();
   } catch (error) {
     $('trackerSaveState').textContent = 'Course data unavailable';
-    $('courseOverview').innerHTML = '<div class="tracker-load-error"><strong>Could not load course data.</strong><p>' + escapeHTML(error.message) + '</p><p>Open this static site through localhost or HTTPS so the browser can fetch CSV files.</p></div>';
+    $('courseOverview').innerHTML = '<div class="tracker-load-error"><strong>Could not load course data.</strong><p>' + escapeHTML(error.message) + '</p><p>If you opened this page directly as a file, use localhost or HTTPS instead.</p></div>';
     setTrackerNotice(error.message, 'error');
   }
 }

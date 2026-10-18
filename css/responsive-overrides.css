@@ -1,4 +1,25 @@
 /* Shared responsive header behavior. */
+.local-checkout-control { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 0 0 auto; }
+.local-checkout-control .checkout-header-status,
+.local-checkout-control .question-csv-state { max-width: 190px; color: var(--muted); font-size: 10px; line-height: 1.25; text-align: center; }
+.quick-revision-launch { display: block !important; margin: 0 0 14px; }
+.quick-revision-launch .button { min-height: 44px; }
+.quick-revision[hidden] { display: none !important; }
+.quick-revision:not([hidden]) { display: block !important; }
+.interview-summary-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin: 0 0 14px; }
+.interview-summary-row .subject-stats { flex: 0 0 auto; gap: 5px; margin: 0; }
+.interview-summary-row .mini-stat { padding: 5px 8px; font-size: 11px; white-space: nowrap; }
+.interview-summary-row .subject-heading-actions { flex: 0 1 auto; width: auto; align-items: center; justify-content: flex-start; gap: 6px; }
+.interview-summary-row .subject-heading-actions > .button { min-height: 32px; padding: 5px 9px; font-size: 12px; }
+@media (max-width: 1024px) {
+  .topbar .local-checkout-control { display: none; }
+}
 @media (max-width: 767px) {
-  .topbar .refresh-indexes-button { display: none !important; }
+  .topbar { flex-wrap: wrap; gap: 8px 12px; padding: 10px 16px; }
+  .topbar .brand { margin-right: auto; }
+  .topbar > .icon-button { order: 1; }
+  .topbar .topnav { order: 2; flex: 1 0 100%; gap: 0; }
+  .topbar .topnav a { padding: 4px 3px; border-radius: 0; white-space: nowrap; }
+  .topbar .topnav a:not(:last-child)::after { content: "|"; margin-left: 6px; color: var(--muted); }
+  .interview-summary-row { gap: 7px; }
 }

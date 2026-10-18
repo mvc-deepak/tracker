@@ -1,0 +1,2 @@
+Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"What are important trade-offs when splitting a monolith into microservices?","Independent deployment and clearer ownership can improve team autonomy, but services introduce network failures, distributed data consistency, observability, and operational overhead. Split around stable business boundaries rather than technical layers.","Service Boundaries","Microservices","Not Started","3"

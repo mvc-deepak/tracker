@@ -1,0 +1,21 @@
+{
+  "topics": [
+    {
+      "id": "asp-net-core-request-flow",
+      "title": "ASP.NET Core Request Flow",
+      "description": "How middleware processes an ASP.NET Core HTTP request.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "An ASP.NET Core request pipeline"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "Incoming request, middleware pipeline, and endpoint response"
+        }
+      ]
+    }
+  ]
+}

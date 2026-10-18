@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" role="img" aria-labelledby="title description">
+  <title id="title">A request through a Claude application</title>
+  <desc id="description">A simple three-step concept diagram for Claude.</desc>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 10 5 0 10Z" fill="#3269d5"/></marker></defs>
+  <rect width="900" height="260" rx="22" fill="#f5f7fa"/>
+  <text x="450" y="46" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="22" font-weight="700" fill="#202b3c">A request through a Claude application</text>
+  <g font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="600" text-anchor="middle">
+    <rect x="45" y="100" width="225" height="95" rx="14" fill="#eaf0ff" stroke="#3269d5" stroke-width="2"/><text x="157" y="155" fill="#202b3c">Application prompt</text>
+    <rect x="338" y="100" width="225" height="95" rx="14" fill="#fff" stroke="#16856b" stroke-width="2"/><text x="450" y="155" fill="#202b3c">Claude model</text>
+    <rect x="630" y="100" width="225" height="95" rx="14" fill="#eaf0ff" stroke="#3269d5" stroke-width="2"/><text x="742" y="155" fill="#202b3c">Validated response</text>
+  </g>
+  <path d="M275 147h50M568 147h50" stroke="#3269d5" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

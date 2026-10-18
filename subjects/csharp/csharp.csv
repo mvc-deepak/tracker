@@ -1,1 +1,2 @@
 Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"How can interfaces reduce coupling in C#?","A caller can depend on an interface rather than a concrete implementation. This allows implementations to be replaced or faked in tests, while the interface keeps the required contract explicit.","Interfaces","C#","Not Started","3"

@@ -1,0 +1,2 @@
+Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"How do Azure management groups, subscriptions, and resource groups relate?","Management groups organize subscriptions for governance and policy inheritance. Subscriptions provide billing and access boundaries. Resource groups contain related resources that are deployed and managed together.","Azure Resource Hierarchy","Azure","Not Started","3"

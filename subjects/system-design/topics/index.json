@@ -1,0 +1,21 @@
+{
+  "topics": [
+    {
+      "id": "request-scaling-basics",
+      "title": "Request Scaling Basics",
+      "description": "A load balancer distributes requests across stateless application instances.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "A basic horizontally scaled web service"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "Clients, load balancer, and application instances"
+        }
+      ]
+    }
+  ]
+}

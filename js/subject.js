@@ -6,6 +6,10 @@ const questionPageHref = () => siteRoot + 'subjects/' + subjectId + '/' + (subje
 const BANK_STORAGE_KEY = 'interviewPrep.bank.v1';
 let items = [];
 let renderQuestions = () => {};
+let checkoutHandle = null;
+let questionCsvHandle = null;
+let questionCsvBaseline = '';
+let questionCsvDirty = false;
 const requestedQuestionId = new URLSearchParams(window.location.search).get('id');
 const subjectReady = subjectsReady.then(() => { subject = SUBJECTS.find(entry => entry.id === subjectId); return subject; });
 
@@ -31,6 +35,111 @@ function saveBank() {
   } catch {
     showNotice('Browser storage is unavailable or full. Download the CSV to keep your changes.', 'error');
     return false;
+  }
+}
+
+function markQuestionCsvDirty() {
+  if (!checkoutHandle) return;
+  questionCsvDirty = true;
+  updateQuestionCsvControls();
+}
+
+function updateQuestionCsvControls() {
+  const saveButton = $('saveQuestionCsv');
+  const state = $('questionCsvState');
+  if (!saveButton) return;
+  saveButton.disabled = !checkoutHandle || !questionCsvDirty;
+  if (state) state.textContent = checkoutHandle
+    ? (questionCsvDirty ? 'Unsaved changes' : 'Local CSV connected')
+    : '';
+  const addButton = $('addQuestion');
+  if (addButton) {
+    addButton.disabled = !checkoutHandle;
+    addButton.title = checkoutHandle ? '' : 'Choose your local checkout before editing questions';
+  }
+}
+
+function csvEscape(value) {
+  return '"' + String(value ?? '').replace(/"/g, '""') + '"';
+}
+
+function serializeQuestionCsv() {
+  const columns = ['Question', 'Answer', 'CoreConcept', 'LanguageTag', 'Status', 'Importance'];
+  const rows = [columns.join(','), ...items.map(item => [
+    item.question, item.answer, item.concept, item.language, item.status || item.csvStatus, item.importance
+  ].map(csvEscape).join(','))];
+  return '\uFEFF' + rows.join('\r\n') + '\r\n';
+}
+
+async function connectQuestionCheckout(root, restored = false) {
+  if (!root) return;
+  if (questionCsvDirty && !window.confirm('Discard unsaved question edits before connecting a checkout?')) return;
+  try {
+    const permission = await root.queryPermission({ mode: 'readwrite' });
+    if (permission !== 'granted') throw new Error('Read/write access to the selected checkout was not granted.');
+    const subjectsDirectory = await root.getDirectoryHandle('subjects');
+    const subjectDirectory = await subjectsDirectory.getDirectoryHandle(subject.id);
+    const csvFile = subject.file || subject.csvFile;
+    if (!csvFile || !/^[^\\/]+\.csv$/i.test(csvFile)) throw new Error('The subject registry does not contain a valid CSV filename.');
+    const fileHandle = await subjectDirectory.getFileHandle(csvFile);
+    const file = await fileHandle.getFile();
+    const csvText = await file.text();
+    const csvItems = parseCSV(csvText).map(item => ({ ...item, key: keyFor(subject.id, item.question) }));
+    const browserItems = loadBank();
+    const importBrowserItems = Array.isArray(browserItems) && window.confirm('This browser has a saved question bank for this subject. Choose OK to use those browser changes and save them to the selected checkout, or Cancel to load the checkout CSV instead.');
+    if (!importBrowserItems) clearSubjectBrowserOverrides(csvItems);
+
+    checkoutHandle = root;
+    questionCsvHandle = fileHandle;
+    questionCsvBaseline = csvText;
+    items = (importBrowserItems ? browserItems : csvItems).map(item => {
+      const key = item.key || keyFor(subject.id, item.question);
+      return { ...item, key, csvStatus: item.csvStatus || item.status, status: item.status || item.csvStatus };
+    });
+    questionCsvDirty = importBrowserItems && serializeQuestionCsv() !== csvText;
+    renderQuestions();
+    updateQuestionCsvControls();
+    showNotice(importBrowserItems
+      ? 'Connected to your checkout and loaded this browser’s saved questions. Save CSV to write them to disk.'
+      : 'Connected to your checkout and loaded its CSV. Changes can be saved directly to subjects/' + subject.id + '/' + csvFile + '; review and commit the CSV.', 'success');
+  } catch (error) {
+    showNotice('Could not connect to the local checkout' + (restored ? ' restored from the header' : '') + ': ' + error.message, 'error');
+  }
+}
+
+async function saveQuestionCsv() {
+  if (!checkoutHandle || !questionCsvHandle) {
+    showNotice('Choose your local checkout before saving directly to CSV.', 'error');
+    return;
+  }
+  try {
+    let permission = await checkoutHandle.queryPermission({ mode: 'readwrite' });
+    if (permission !== 'granted') permission = await checkoutHandle.requestPermission({ mode: 'readwrite' });
+    if (permission !== 'granted') throw new Error('Write access to the selected checkout is no longer available.');
+    const latestText = await (await questionCsvHandle.getFile()).text();
+    if (latestText !== questionCsvBaseline) throw new Error('The CSV changed outside the page after it was loaded. Reconnect the checkout before saving to avoid overwriting newer changes.');
+    const updatedText = serializeQuestionCsv();
+    const writable = await questionCsvHandle.createWritable();
+    await writable.write(updatedText);
+    await writable.close();
+    questionCsvBaseline = updatedText;
+    questionCsvDirty = false;
+    let cacheWarning = '';
+    try {
+      const allBanks = JSON.parse(localStorage.getItem(BANK_STORAGE_KEY) || '{}');
+      delete allBanks[subject.id];
+      if (Object.keys(allBanks).length) localStorage.setItem(BANK_STORAGE_KEY, JSON.stringify(allBanks));
+      else localStorage.removeItem(BANK_STORAGE_KEY);
+    } catch (error) {
+      cacheWarning = ' The CSV was saved, but older browser-saved questions could not be cleared: ' + error.message;
+    }
+    const savedStatuses = getSaved();
+    for (const item of items) delete savedStatuses[item.key];
+    saveSaved(savedStatuses);
+    updateQuestionCsvControls();
+    showNotice('Saved subjects/' + subject.id + '/' + (subject.file || subject.csvFile) + '. Review and commit this CSV to publish your changes.' + cacheWarning, cacheWarning ? 'error' : 'success');
+  } catch (error) {
+    showNotice('Could not save the question CSV: ' + error.message, 'error');
   }
 }
 
@@ -128,10 +237,13 @@ function makeEditor() {
     };
     if (previous) items = items.map(item => item.key === key ? record : item);
     else items.push(record);
-    saveBank();
+    if (checkoutHandle) markQuestionCsvDirty();
+    else saveBank();
     saveQuestionStatus(record);
     dialog.close();
-    showNotice(previous ? 'Question updated in this browser. Download the CSV to commit the change.' : 'Question added in this browser. Download the CSV to commit the change.', 'success');
+    showNotice(checkoutHandle
+      ? (previous ? 'Question updated. Save CSV to write the change to your checkout.' : 'Question added. Save CSV to write the change to your checkout.')
+      : 'Choose your local checkout before editing questions.', 'success');
     renderQuestions();
   });
   return dialog;
@@ -143,7 +255,26 @@ function saveQuestionStatus(item) {
   saveSaved(saved);
 }
 
+function clearSubjectBrowserOverrides(entries) {
+  let allBanks;
+  try {
+    allBanks = JSON.parse(localStorage.getItem(BANK_STORAGE_KEY) || '{}');
+  } catch {
+    throw new Error('Browser-saved question data could not be read. Check site storage before connecting the checkout.');
+  }
+  delete allBanks[subject.id];
+  if (Object.keys(allBanks).length) localStorage.setItem(BANK_STORAGE_KEY, JSON.stringify(allBanks));
+  else localStorage.removeItem(BANK_STORAGE_KEY);
+  const savedStatuses = getSaved();
+  for (const item of entries) delete savedStatuses[item.key];
+  saveSaved(savedStatuses);
+}
+
 function openEditor(item = null) {
+  if (!checkoutHandle) {
+    showNotice('Choose your local checkout before editing questions.', 'info');
+    return;
+  }
   const dialog = $('questionEditor');
   const form = $('questionForm');
   form.reset();
@@ -159,50 +290,42 @@ function openEditor(item = null) {
   form.elements.question.focus();
 }
 
-function exportCSV() {
-  const columns = ['Question', 'Answer', 'CoreConcept', 'LanguageTag', 'Status', 'Importance'];
-  const quote = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
-  const rows = [columns.join(','), ...items.map(item => [item.question, item.answer, item.concept, item.language, item.status || item.csvStatus, item.importance].map(quote).join(','))];
-  const blob = new Blob(['\uFEFF' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = subject.file;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-  showNotice(`Downloaded ${subject.file}. Replace subjects/${subject.id}/${subject.file} in your checkout and commit it to publish your question bank.`, 'success');
-}
-
-function resetToCSV() {
-  if (!window.confirm('Discard browser-local question edits for this subject and reload its CSV? Download the CSV first if you need to keep those edits.')) return;
-  try {
-    const allBanks = JSON.parse(localStorage.getItem(BANK_STORAGE_KEY) || '{}');
-    delete allBanks[subject.id];
-    if (Object.keys(allBanks).length) localStorage.setItem(BANK_STORAGE_KEY, JSON.stringify(allBanks));
-    else localStorage.removeItem(BANK_STORAGE_KEY);
-    window.location.reload();
-  } catch {
-    showNotice('Could not reset local question edits. Check browser storage settings.', 'error');
-  }
-}
-
 function installManagementControls() {
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = siteRoot + 'css/question-admin.css';
+  stylesheet.href = siteRoot + 'css/question-admin.css?v=question-admin-6';
   document.head.append(stylesheet);
   const toolbar = document.querySelector('.subject-toolbar');
   const actions = document.createElement('div');
   actions.className = 'bank-actions';
-  actions.innerHTML = '<button type="button" id="addQuestion" class="button primary">＋ Add question</button><button type="button" id="exportQuestions" class="button">Download CSV</button><button type="button" id="resetQuestionBank" class="button" title="Discard local question edits and reload the source CSV">Reset to CSV</button>';
-  toolbar.append(actions);
+  actions.innerHTML = '<button type="button" id="saveQuestionCsv" class="button primary" disabled>Save CSV</button><button type="button" id="addQuestion" class="button" disabled>＋ Add question</button>';
+  actions.classList.add('subject-heading-actions');
+  const backToTopics = $('backToTopics');
+  const csvState = document.createElement('span');
+  csvState.id = 'questionCsvState';
+  csvState.className = 'question-csv-state';
+  csvState.setAttribute('role', 'status');
+  document.querySelector('.local-checkout-control')?.append(csvState);
+  actions.prepend(backToTopics);
+  const summaryRow = document.createElement('div');
+  summaryRow.className = 'interview-summary-row';
+  const subjectStats = $('subjectStats');
+  summaryRow.append(subjectStats, actions);
+  document.querySelector('.page-heading').after(summaryRow);
+  $('saveQuestionCsv').addEventListener('click', saveQuestionCsv);
   $('addQuestion').addEventListener('click', () => openEditor());
-  $('exportQuestions').addEventListener('click', exportCSV);
-  $('resetQuestionBank').addEventListener('click', resetToCSV);
   makeEditor();
+  updateQuestionCsvControls();
+  const footer = document.querySelector('main footer');
+  if (footer) footer.textContent = 'Use the refresh-indexes button in the shared header in Chrome or Edge on localhost/HTTPS to select your checkout, edit questions, and save the CSV directly to disk. Review and commit the CSV to publish updates.';
 }
+
+document.addEventListener('local-checkout-selected', event => {
+  const { handle, restored } = event.detail;
+  subjectReady.then(() => connectQuestionCheckout(handle, restored)).catch(error => {
+    showNotice('Could not load subject metadata: ' + error.message, 'error');
+  });
+});
 
 subjectReady.then(() => {
   if (!subject) return;
@@ -238,7 +361,7 @@ subjectReady.then(() => {
           const questionNumber = items.indexOf(item) + 1;
           const sharedAnswer = answerHTML(item.answer);
           const shareBar = shareActionsHTML(item, questionNumber - 1);
-          return `<details class="question" id="question-${escapeHTML(shareIdFor(item))}"${requestedQuestionId ? ' open' : ''}><summary><span class="question-number">QUESTION ${questionNumber}</span><span class="question-title">${escapeHTML(item.question)}</span><span class="question-meta"><span class="chip">${escapeHTML(item.concept)}</span><span class="chip">${escapeHTML(item.language)}</span><span class="chip">Importance ${item.importance}/5</span><span class="chip status-${escapeHTML(item.status)}">${escapeHTML(item.status)}</span></span></summary><div class="answer">${sharedAnswer}${shareBar}<div class="question-controls"><label>Study status <select data-status-key="${escapeHTML(item.key)}" aria-label="Study status for ${escapeHTML(item.question)}">${STATUSES.map(value => `<option${item.status === value ? ' selected' : ''}>${value}</option>`).join('')}</select></label><div class="question-actions"><button type="button" class="button" data-edit="${escapeHTML(item.key)}">Edit</button><button type="button" class="button danger-button" data-delete="${escapeHTML(item.key)}">Delete</button></div></div></div></details>`;
+          return `<details class="question" id="question-${escapeHTML(shareIdFor(item))}"${requestedQuestionId ? ' open' : ''}><summary><span class="question-number">QUESTION ${questionNumber}</span><span class="question-title">${escapeHTML(item.question)}</span><span class="question-meta"><span class="chip">${escapeHTML(item.concept)}</span><span class="chip">${escapeHTML(item.language)}</span><span class="chip">Importance ${item.importance}/5</span><span class="chip status-${escapeHTML(item.status)}">${escapeHTML(item.status)}</span></span></summary><div class="answer">${sharedAnswer}${shareBar}<div class="question-controls"><label>Study status <select data-status-key="${escapeHTML(item.key)}" aria-label="Study status for ${escapeHTML(item.question)}" ${checkoutHandle ? '' : 'disabled'}>${STATUSES.map(value => `<option${item.status === value ? ' selected' : ''}>${value}</option>`).join('')}</select></label><div class="question-actions"><button type="button" class="button" data-edit="${escapeHTML(item.key)}" ${checkoutHandle ? '' : 'disabled'}>Edit</button><button type="button" class="button danger-button" data-delete="${escapeHTML(item.key)}" ${checkoutHandle ? '' : 'disabled'}>Delete</button></div></div></div></details>`;
         }).join('');
         if (requestedQuestionId) document.title = 'Shared question · ' + filtered[0].question + ' | ' + subject.label;
       };
@@ -252,12 +375,19 @@ subjectReady.then(() => {
         if (!select) return;
         const item = items.find(entry => entry.key === select.dataset.statusKey);
         if (!item) return;
+        if (!checkoutHandle) {
+          showNotice('Choose your local checkout before editing question statuses.', 'info');
+          render();
+          return;
+        }
         item.status = select.value;
+        item.csvStatus = select.value;
         const saved = getSaved();
         saved[item.key] = item.status;
         saveSaved(saved);
-        saveBank();
+        markQuestionCsvDirty();
         render();
+        showNotice('Status changed. Save CSV to write it to your checkout.', 'success');
       });
       $('questionList').addEventListener('click', event => {
         const copyQuestionButton = event.target.closest('[data-copy-question]');
@@ -293,13 +423,17 @@ subjectReady.then(() => {
         const deleteButton = event.target.closest('[data-delete]');
         if (deleteButton) {
           const item = items.find(entry => entry.key === deleteButton.dataset.delete);
-          if (!item || !window.confirm(`Delete “${item.question}”? Download the updated CSV to keep this deletion in the repository.`)) return;
+          if (!checkoutHandle) {
+            showNotice('Choose your local checkout before editing questions.', 'info');
+            return;
+          }
+          if (!item || !window.confirm(`Delete “${item.question}”? Save CSV to keep this deletion in your checkout.`)) return;
           items = items.filter(entry => entry.key !== item.key);
+          markQuestionCsvDirty();
           const saved = getSaved();
           delete saved[item.key];
           saveSaved(saved);
-          saveBank();
-          showNotice('Question deleted in this browser. Download the CSV to commit the change.', 'success');
+          showNotice('Question deleted. Save CSV to write the change to your checkout.', 'success');
           render();
         }
       });
@@ -314,6 +448,12 @@ subjectReady.then(() => {
         document.querySelectorAll('[data-share-toggle]').forEach(button => button.setAttribute('aria-expanded', 'false'));
       });
       $('clearFilters').addEventListener('click', () => { $('search').value = ''; $('statusFilter').value = ''; $('importanceFilter').value = ''; render(); });
+      window.addEventListener('beforeunload', event => {
+        if (questionCsvDirty) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      });
     } catch (error) {
       showNotice(error.message + ' Check that this page is opened through GitHub Pages or a local web server, not file://.', 'error');
       $('resultCount').textContent = 'Question bank unavailable';

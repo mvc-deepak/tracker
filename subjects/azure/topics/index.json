@@ -1,0 +1,21 @@
+{
+  "topics": [
+    {
+      "id": "cloud-resource-foundations",
+      "title": "Cloud Resource Foundations",
+      "description": "Resource organization and governance hierarchy in Azure.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "Organizing Azure resources"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "Azure management group, subscription, and resource group hierarchy"
+        }
+      ]
+    }
+  ]
+}

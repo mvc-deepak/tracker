@@ -1,0 +1,21 @@
+{
+  "topics": [
+    {
+      "id": "terraform-workflow",
+      "title": "Terraform Workflow",
+      "description": "Terraform compares configuration and state to plan infrastructure changes.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "From configuration to infrastructure"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "Terraform configuration, plan, and apply"
+        }
+      ]
+    }
+  ]
+}

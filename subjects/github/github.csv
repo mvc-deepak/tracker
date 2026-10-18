@@ -1,0 +1,2 @@
+Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"What is the purpose of a GitHub pull request?","A pull request proposes a branch change for discussion and review before it is merged. It can run automated checks, collect feedback, and preserve a record of the decision and resulting merge.","Pull Request","GitHub","Not Started","3"

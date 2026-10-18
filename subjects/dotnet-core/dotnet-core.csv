@@ -1,0 +1,2 @@
+Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"How does middleware ordering affect an ASP.NET Core application?","Middleware runs in the order it is registered for the request and in reverse order for the response. Ordering matters because components such as exception handling, routing, authentication, and authorization depend on earlier middleware having prepared the request.","ASP.NET Core Middleware","C#","Not Started","3"

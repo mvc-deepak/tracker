@@ -1,0 +1,21 @@
+{
+  "topics": [
+    {
+      "id": "workload-basics",
+      "title": "Workload Basics",
+      "description": "Deployments, Pods, and Services in a Kubernetes workload.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "Kubernetes workload building blocks"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "Kubernetes Deployment, Pods, and Service"
+        }
+      ]
+    }
+  ]
+}

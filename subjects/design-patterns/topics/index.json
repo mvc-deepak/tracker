@@ -1,0 +1,21 @@
+{
+  "topics": [
+    {
+      "id": "strategy-pattern",
+      "title": "Strategy Pattern",
+      "description": "Separating interchangeable behavior behind a strategy contract.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "Encapsulating interchangeable behavior"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "Context, strategy contract, and concrete strategy"
+        }
+      ]
+    }
+  ]
+}

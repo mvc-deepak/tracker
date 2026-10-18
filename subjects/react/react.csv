@@ -1,1 +1,2 @@
 Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"Why should React state be treated as immutable?","Creating a new state value gives React a clear change to compare and keeps updates predictable. Mutating an existing object can hide changes from rendering logic and make previous state snapshots unreliable.","React State","React","Not Started","3"

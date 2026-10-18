@@ -1,3 +1,21 @@
 {
-  "topics": []
+  "topics": [
+    {
+      "id": "relational-joins",
+      "title": "Relational Joins",
+      "description": "Combining customer and order rows with a relational join.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "Combining related rows with a join"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "Customers, join condition, and orders"
+        }
+      ]
+    }
+  ]
 }

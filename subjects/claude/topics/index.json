@@ -1,0 +1,21 @@
+{
+  "topics": [
+    {
+      "id": "llm-application-basics",
+      "title": "LLM Application Basics",
+      "description": "Validating model output in a Claude-powered application.",
+      "pages": [
+        {
+          "file": "overview.md",
+          "title": "A request through a Claude application"
+        }
+      ],
+      "images": [
+        {
+          "file": "images/concept.svg",
+          "alt": "Application prompt, Claude model, and validated response"
+        }
+      ]
+    }
+  ]
+}

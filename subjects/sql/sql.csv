@@ -1,1 +1,2 @@
 Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"What is the difference between an INNER JOIN and a LEFT JOIN?","An INNER JOIN returns rows that match on both sides. A LEFT JOIN returns every row from the left input and matching right-side rows; when there is no right-side match, the right columns are NULL.","SQL Joins","SQL","Not Started","3"

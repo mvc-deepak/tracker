@@ -1,0 +1,2 @@
+Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"What does Terraform state do?","Terraform state records the mapping between configuration resources and real infrastructure objects. Terraform uses it to determine what exists and what changes are needed. Store shared state remotely with access controls and locking, and protect it as sensitive operational data.","Terraform State","Terraform","Not Started","3"

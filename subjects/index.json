@@ -9,12 +9,68 @@
       "interviewPage": "dotnet_interview.html"
     },
     {
+      "id": "dotnet-core",
+      "label": ".NET Core",
+      "description": "Cross-platform .NET applications, dependency injection, and hosting.",
+      "csvFile": "dotnet-core.csv",
+      "topicsPage": "dotnet-core.html",
+      "interviewPage": "dotnet-core_interview.html"
+    },
+    {
+      "id": "azure",
+      "label": "Azure",
+      "description": "Cloud services, identity, networking, and reliable deployments.",
+      "csvFile": "azure.csv",
+      "topicsPage": "azure.html",
+      "interviewPage": "azure_interview.html"
+    },
+    {
       "id": "csharp",
       "label": "C#",
       "description": "Language fundamentals, async, collections and OOP.",
       "csvFile": "csharp.csv",
       "topicsPage": "csharp.html",
       "interviewPage": "csharp_interview.html"
+    },
+    {
+      "id": "claude",
+      "label": "Claude",
+      "description": "Using Claude models, tools, and context effectively in applications.",
+      "csvFile": "claude.csv",
+      "topicsPage": "claude.html",
+      "interviewPage": "claude_interview.html"
+    },
+    {
+      "id": "design-patterns",
+      "label": "Design Patterns",
+      "description": "Reusable object-oriented solutions and the trade-offs behind them.",
+      "csvFile": "design-patterns.csv",
+      "topicsPage": "design-patterns.html",
+      "interviewPage": "design-patterns_interview.html"
+    },
+    {
+      "id": "github",
+      "label": "GitHub",
+      "description": "Repositories, collaboration, pull requests, and automated workflows.",
+      "csvFile": "github.csv",
+      "topicsPage": "github.html",
+      "interviewPage": "github_interview.html"
+    },
+    {
+      "id": "kubernetes",
+      "label": "Kubernetes",
+      "description": "Container orchestration, workloads, services, and cluster operations.",
+      "csvFile": "kubernetes.csv",
+      "topicsPage": "kubernetes.html",
+      "interviewPage": "kubernetes_interview.html"
+    },
+    {
+      "id": "microservices",
+      "label": "Microservices",
+      "description": "Distributed services, bounded contexts, communication, and resilience.",
+      "csvFile": "microservices.csv",
+      "topicsPage": "microservices.html",
+      "interviewPage": "microservices_interview.html"
     },
     {
       "id": "react",
@@ -31,6 +87,22 @@
       "csvFile": "sql.csv",
       "topicsPage": "sql.html",
       "interviewPage": "sql_interview.html"
+    },
+    {
+      "id": "system-design",
+      "label": "System Design",
+      "description": "Designing scalable, reliable systems and explaining architectural trade-offs.",
+      "csvFile": "system-design.csv",
+      "topicsPage": "system-design.html",
+      "interviewPage": "system-design_interview.html"
+    },
+    {
+      "id": "terraform",
+      "label": "Terraform",
+      "description": "Declarative infrastructure provisioning with reusable configuration.",
+      "csvFile": "terraform.csv",
+      "topicsPage": "terraform.html",
+      "interviewPage": "terraform_interview.html"
     }
   ]
 }

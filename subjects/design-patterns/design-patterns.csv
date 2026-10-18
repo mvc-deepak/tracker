@@ -1,0 +1,2 @@
+Question,Answer,CoreConcept,LanguageTag,Status,Importance
+"When is the Strategy pattern useful?","Use Strategy when a behavior has multiple interchangeable implementations and callers should select one without embedding conditional logic throughout the context. It improves separation, but adds types and indirection that may not be worthwhile for a single stable behavior.","Strategy Pattern","Design Patterns","Not Started","3"
